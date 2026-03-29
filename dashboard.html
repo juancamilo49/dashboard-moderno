@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: #1e293b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    nav .brand { font-size: 1.2rem; font-weight: 700; letter-spacing: .5px; }
+    nav .brand span { color: #38bdf8; }
+    nav .nav-links { display: flex; gap: 24px; }
+    nav .nav-links a {
+      color: #cbd5e1; text-decoration: none; font-size: .9rem;
+      transition: color .2s;
+    }
+    nav .nav-links a:hover { color: #38bdf8; }
+    nav .nav-right { display: flex; align-items: center; gap: 12px; }
+    nav .nav-right .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #38bdf8; display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: .9rem;
+      color: #1e293b; cursor: pointer;
+    }
+    .badge {
+      background: #ef4444; color: #fff; border-radius: 12px;
+      font-size: .7rem; padding: 2px 7px;
+    }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    /* Profile card */
+    .profile-card { text-align: center; }
+    .profile-card .avatar-lg {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: #fff; margin: 0 auto 12px;
+    }
+    .profile-card h2 { font-size: 1.1rem; font-weight: 700; }
+    .profile-card p { font-size: .82rem; color: #64748b; margin-top: 2px; }
+    .profile-stats {
+      display: flex; justify-content: space-around;
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .profile-stats div { text-align: center; }
+    .profile-stats .val { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+    .profile-stats .lbl { font-size: .72rem; color: #94a3b8; }
+
+    /* Menu card */
+    .menu-card a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 8px; border-radius: 8px; text-decoration: none;
+      color: #475569; font-size: .88rem; transition: background .15s;
+    }
+    .menu-card a:hover { background: #f1f5f9; color: #1e293b; }
+    .menu-card a.active { background: #eff6ff; color: #3b82f6; font-weight: 600; }
+    .menu-card a .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+    /* ── MAIN ── */
+    .main { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Stat row */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat-card {
+      background: #fff; border-radius: 14px; padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .stat-card:nth-child(1) .stat-icon { background: #dbeafe; }
+    .stat-card:nth-child(2) .stat-icon { background: #dcfce7; }
+    .stat-card:nth-child(3) .stat-icon { background: #fef3c7; }
+    .stat-info .val { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+    .stat-info .lbl { font-size: .78rem; color: #94a3b8; margin-top: 2px; }
+    .stat-info .delta { font-size: .75rem; color: #22c55e; font-weight: 600; }
+
+    /* Chart card */
+    .chart-card { position: relative; }
+    .chart-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
+    }
+    .chart-header h3 { font-size: 1rem; font-weight: 700; }
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .75rem; color: #22c55e; font-weight: 600;
+    }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(1.3); }
+    }
+
+    canvas { width: 100% !important; }
+
+    /* Action buttons */
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: .88rem; font-weight: 600; cursor: pointer;
+      transition: transform .1s, opacity .2s;
+    }
+    .btn:hover { opacity: .88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-warning { background: #f59e0b; color: #fff; }
+    .btn-danger  { background: #ef4444; color: #fff; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    thead tr { background: #f8fafc; }
+    th, td {
+      padding: 11px 14px; text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th { font-weight: 600; color: #64748b; font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; }
+    tbody tr:hover { background: #f8fafc; }
+    .status {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: .72rem; font-weight: 600;
+    }
+    .status.active  { background: #dcfce7; color: #16a34a; }
+    .status.pending { background: #fef3c7; color: #d97706; }
+    .status.inactive{ background: #fee2e2; color: #dc2626; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.4); z-index: 200;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; padding: 28px;
+      width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 18px; }
+    .modal label { font-size: .82rem; color: #64748b; display: block; margin-bottom: 4px; }
+    .modal input, .modal select {
+      width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0;
+      border-radius: 8px; font-size: .88rem; margin-bottom: 14px;
+      outline: none; transition: border .2s;
+    }
+    .modal input:focus, .modal select:focus { border-color: #3b82f6; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+    .btn-ghost { background: #f1f5f9; color: #475569; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">Dash<span>Board</span></div>
+  <div class="nav-links">
+    <a href="#">Inicio</a>
+    <a href="#">Análisis</a>
+    <a href="#">Reportes</a>
+    <a href="#">Ajustes</a>
+  </div>
+  <div class="nav-right">
+    <span class="badge">3</span>
+    <div class="avatar">JD</div>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Profile -->
+    <div class="card profile-card">
+      <div class="avatar-lg">👤</div>
+      <h2>Juan Díaz</h2>
+      <p>Administrador</p>
+      <div class="profile-stats">
+        <div><div class="val">142</div><div class="lbl">Proyectos</div></div>
+        <div><div class="val">8.4k</div><div class="lbl">Usuarios</div></div>
+        <div><div class="val">97%</div><div class="lbl">Uptime</div></div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="card menu-card">
+      <a href="#" class="active"><span class="icon">📊</span> Dashboard</a>
+      <a href="#"><span class="icon">👥</span> Usuarios</a>
+      <a href="#"><span class="icon">📁</span> Proyectos</a>
+      <a href="#"><span class="icon">📈</span> Estadísticas</a>
+      <a href="#"><span class="icon">🔔</span> Notificaciones</a>
+      <a href="#"><span class="icon">⚙️</span> Configuración</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <div class="val">8,412</div>
+          <div class="lbl">Usuarios activos</div>
+          <div class="delta">▲ 12% este mes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <div class="val">$24,580</div>
+          <div class="lbl">Ingresos totales</div>
+          <div class="delta">▲ 8% este mes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <div class="val">1,038</div>
+          <div class="lbl">Pedidos</div>
+          <div class="delta">▲ 5% este mes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card chart-card">
+      <div class="chart-header">
+        <h3>Actividad en tiempo real</h3>
+        <div class="live-badge"><div class="live-dot"></div> En vivo</div>
+      </div>
+      <canvas id="chart" height="200"></canvas>
+    </div>
+
+    <!-- Actions + Table -->
+    <div class="card">
+      <div class="chart-header">
+        <h3>Gestión de registros</h3>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="openModal('add')">+ Agregar</button>
+          <button class="btn btn-warning" onclick="openModal('edit')">✏️ Editar</button>
+          <button class="btn btn-danger" onclick="deleteSelected()">🗑 Eliminar</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+              <th>ID</th><th>Nombre</th><th>Email</th><th>Estado</th><th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Agregar registro</h3>
+    <label>Nombre</label>
+    <input id="fName" type="text" placeholder="Ej. María García">
+    <label>Email</label>
+    <input id="fEmail" type="email" placeholder="correo@ejemplo.com">
+    <label>Estado</label>
+    <select id="fStatus">
+      <option value="active">Activo</option>
+      <option value="pending">Pendiente</option>
+      <option value="inactive">Inactivo</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRecord()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let records = [
+  { id: 1, name: 'Ana Torres',    email: 'ana@mail.com',    status: 'active',   date: '2026-01-15' },
+  { id: 2, name: 'Luis Pérez',    email: 'luis@mail.com',   status: 'pending',  date: '2026-02-03' },
+  { id: 3, name: 'Carla Núñez',   email: 'carla@mail.com',  status: 'active',   date: '2026-02-18' },
+  { id: 4, name: 'Pedro Gómez',   email: 'pedro@mail.com',  status: 'inactive', date: '2026-03-01' },
+  { id: 5, name: 'Sofía Blanco',  email: 'sofia@mail.com',  status: 'active',   date: '2026-03-10' },
+];
+let nextId = 6;
+
+function renderTable() {
+  const body = document.getElementById('tableBody');
+  body.innerHTML = records.map(r => `
+    <tr>
+      <td><input type="checkbox" class="row-check" data-id="${r.id}"></td>
+      <td>#${r.id}</td>
+      <td>${r.name}</td>
+      <td>${r.email}</td>
+      <td><span class="status ${r.status}">${{active:'Activo',pending:'Pendiente',inactive:'Inactivo'}[r.status]}</span></td>
+      <td>${r.date}</td>
+    </tr>`).join('');
+}
+renderTable();
+
+function toggleAll(cb) {
+  document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked);
+}
+function getSelected() {
+  return [...document.querySelectorAll('.row-check:checked')].map(c => +c.dataset.id);
+}
+
+let modalMode = 'add';
+function openModal(mode) {
+  modalMode = mode;
+  document.getElementById('modalTitle').textContent = mode === 'add' ? 'Agregar registro' : 'Editar registro';
+  if (mode === 'edit') {
+    const ids = getSelected();
+    if (ids.length !== 1) { alert('Selecciona exactamente un registro para editar.'); return; }
+    const rec = records.find(r => r.id === ids[0]);
+    document.getElementById('fName').value   = rec.name;
+    document.getElementById('fEmail').value  = rec.email;
+    document.getElementById('fStatus').value = rec.status;
+  } else {
+    document.getElementById('fName').value  = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fStatus').value = 'active';
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function saveRecord() {
+  const name   = document.getElementById('fName').value.trim();
+  const email  = document.getElementById('fEmail').value.trim();
+  const status = document.getElementById('fStatus').value;
+  if (!name || !email) { alert('Completa todos los campos.'); return; }
+  if (modalMode === 'add') {
+    records.push({ id: nextId++, name, email, status, date: new Date().toISOString().slice(0,10) });
+  } else {
+    const id = getSelected()[0];
+    const rec = records.find(r => r.id === id);
+    Object.assign(rec, { name, email, status });
+  }
+  renderTable();
+  closeModal();
+}
+function deleteSelected() {
+  const ids = getSelected();
+  if (!ids.length) { alert('Selecciona al menos un registro.'); return; }
+  if (!confirm(`¿Eliminar ${ids.length} registro(s)?`)) return;
+  records = records.filter(r => !ids.includes(r.id));
+  document.getElementById('checkAll').checked = false;
+  renderTable();
+}
+
+const canvas = document.getElementById('chart');
+const ctx    = canvas.getContext('2d');
+const MAX    = 40;
+const data   = Array.from({length: MAX}, () => Math.random() * 60 + 20);
+function resizeCanvas() {
+  canvas.width  = canvas.parentElement.clientWidth - 40;
+  canvas.height = 200;
+}
+resizeCanvas();
+window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  const padL = 40, padR = 10, padT = 10, padB = 30;
+  const cW = W - padL - padR, cH = H - padT - padB;
+  ctx.clearRect(0, 0, W, H);
+  const max = Math.max(...data) + 10;
+  const min = Math.max(0, Math.min(...data) - 10);
+  const scaleY = v => padT + cH - ((v - min) / (max - min)) * cH;
+  const scaleX = i => padL + (i / (MAX - 1)) * cW;
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (i / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px Segoe UI';
+    ctx.fillText(Math.round(max - (i / 4) * (max - min)), 2, y + 4);
+  }
+  const grad = ctx.createLinearGradient(0, padT, 0, padT + cH);
+  grad.addColorStop(0, 'rgba(56,189,248,.35)');
+  grad.addColorStop(1, 'rgba(56,189,248,.02)');
+  ctx.beginPath();
+  data.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
+  ctx.lineTo(scaleX(MAX-1), padT + cH);
+  ctx.lineTo(scaleX(0), padT + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.beginPath();
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  data.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
+  ctx.stroke();
+  const lx = scaleX(MAX-1), ly = scaleY(data[MAX-1]);
+  ctx.beginPath(); ctx.arc(lx, ly, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#38bdf8'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+}
+draw();
+setInterval(() => {
+  data.push(Math.max(10, data[data.length-1] + (Math.random()-0.48) * 15));
+  if (data.length > MAX) data.shift();
+  draw();
+}, 800);
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
